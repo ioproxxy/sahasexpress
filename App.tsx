@@ -11,15 +11,19 @@ import AdminLogin from './components/AdminLogin';
 import WhatsAppButton from './components/WhatsAppButton';
 import ProductDetailModal from './components/ProductDetailModal';
 import OrderConfirmation from './components/OrderConfirmation';
+import WishlistView from './components/WishlistView';
+import OrderHistoryView from './components/OrderHistoryView';
+import { initiateSTKPush } from './services/mpesaService';
 
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.Store);
   const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [wishlist, setWishlist] = useState<number[]>([]);
   const [isCheckoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [isProcessingPayment, setProcessingPayment] = useState(false);
-  const [lastOrder, setLastOrder] = useState<Order | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [sortOption, setSortOption] = useState<SortOption>(SortOption.Default);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -29,6 +33,7 @@ const App: React.FC = () => {
   });
   const [categoryFilter, setCategoryFilter] = useState<string>('All');
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
 
   const handleSelectProduct = (product: Product) => {
@@ -95,34 +100,77 @@ const App: React.FC = () => {
         return itemId !== targetId;
     }));
   }, []);
+  
+  const toggleWishlist = useCallback((productId: number) => {
+    setWishlist(prev => 
+      prev.includes(productId) 
+        ? prev.filter(id => id !== productId)
+        : [...prev, productId]
+    );
+  }, []);
 
   const handleCheckout = () => {
+    setCheckoutError(null);
     setCheckoutModalOpen(true);
   };
 
-  const handleConfirmPayment = (phone: string) => {
+  const handleConfirmPayment = async (phone: string) => {
     setProcessingPayment(true);
-    // Simulate API call
-    setTimeout(() => {
-      const orderId = `SE${Date.now()}`;
-      const newOrder: Order = {
-        id: orderId,
-        items: cart,
-        total: cart.reduce((sum, item) => sum + item.price * item.quantity, 0),
-        customerPhone: phone,
-        status: 'Placed',
-        timestamp: new Date(),
-      };
-      setLastOrder(newOrder);
-      setCart([]);
-      setProcessingPayment(false);
-      setCheckoutModalOpen(false);
-      setCurrentView(View.OrderConfirmation);
-      // Simulate order status progression
-      setTimeout(() => setLastOrder(prev => prev && prev.id === newOrder.id ? {...prev, status: 'Processing'} : prev), 10000);
-      setTimeout(() => setLastOrder(prev => prev && prev.id === newOrder.id ? {...prev, status: 'Shipped'} : prev), 30000);
-    }, 2000);
+    setCheckoutError(null);
+
+    const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+    // M-Pesa sandbox works best with an amount of 1 for testing purposes.
+    // For a real transaction, you would use `Math.round(total)`.
+    const amount = 1;
+
+    try {
+        const response = await initiateSTKPush(phone, amount);
+
+        if (response.ResponseCode === "0") {
+            // STK Push was successfully initiated. We now simulate waiting for the user to enter their PIN.
+            // In a real application, a backend webhook would listen for the payment confirmation.
+            console.log('STK Push initiated. CheckoutRequestID:', response.CheckoutRequestID);
+
+            // Wait 10 seconds to simulate payment completion and callback processing.
+            setTimeout(() => {
+                const orderId = `SE${Date.now()}`;
+                const newOrder: Order = {
+                    id: orderId,
+                    items: cart,
+                    total: total, // The order is saved with the correct total.
+                    customerPhone: phone,
+                    status: 'Placed',
+                    timestamp: new Date(),
+                };
+                setOrders(prev => [newOrder, ...prev]);
+                setCart([]);
+                setProcessingPayment(false);
+                setCheckoutModalOpen(false);
+                setCurrentView(View.OrderConfirmation);
+
+                const updateOrderStatus = (id: string, newStatus: Order['status']) => {
+                    setOrders(prevOrders => prevOrders.map(o => o.id === id ? { ...o, status: newStatus } : o));
+                };
+
+                setTimeout(() => updateOrderStatus(newOrder.id, 'Processing'), 10000);
+                setTimeout(() => updateOrderStatus(newOrder.id, 'Shipped'), 30000);
+            }, 10000);
+        } else {
+            throw new Error(response.errorMessage || response.ResponseDescription || 'M-Pesa API returned an error.');
+        }
+    } catch (error) {
+        console.error("M-Pesa STK Push Error:", error);
+        const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+        
+        if (errorMessage.includes('Failed to fetch') || errorMessage.includes('CORS')) {
+             setCheckoutError("Could not connect to M-Pesa. In a real app, this is handled by a backend server to avoid CORS issues.");
+        } else {
+             setCheckoutError(errorMessage);
+        }
+        setProcessingPayment(false);
+    }
   };
+
 
   const handleAdminLoginSuccess = () => {
     setIsAdminLoggedIn(true);
@@ -230,6 +278,8 @@ const App: React.FC = () => {
   };
 
   const renderView = () => {
+    const lastOrder = orders.length > 0 ? orders[0] : null;
+
     switch (currentView) {
       case View.Cart:
         return (
@@ -240,8 +290,21 @@ const App: React.FC = () => {
             onCheckout={handleCheckout}
           />
         );
+      case View.Wishlist:
+        const wishlistedProducts = products.filter(p => wishlist.includes(p.id));
+        return (
+            <WishlistView
+                wishlistedProducts={wishlistedProducts}
+                onToggleWishlist={toggleWishlist}
+                onAddToCart={addToCart}
+                onViewDetails={handleSelectProduct}
+                wishlist={wishlist}
+            />
+        );
       case View.TrackOrder:
-        return <OrderTracking lastOrder={lastOrder} />;
+        return <OrderTracking orders={orders} />;
+      case View.OrderHistory:
+        return <OrderHistoryView orders={orders} setView={setCurrentView} />;
       case View.OrderConfirmation:
         return <OrderConfirmation order={lastOrder} onContinueShopping={() => setCurrentView(View.Store)} />;
       case View.Admin:
@@ -325,6 +388,8 @@ const App: React.FC = () => {
                       product={product} 
                       onAddToCart={addToCart} 
                       onViewDetails={handleSelectProduct}
+                      onToggleWishlist={toggleWishlist}
+                      isWishlisted={wishlist.includes(product.id)}
                     />
                   ))}
                 </div>
@@ -348,6 +413,7 @@ const App: React.FC = () => {
     <div className="min-h-screen flex flex-col">
       <Header
         cartCount={cartCount}
+        wishlistCount={wishlist.length}
         setView={setCurrentView}
         currentView={currentView}
         isAdminLoggedIn={isAdminLoggedIn}
@@ -374,6 +440,7 @@ const App: React.FC = () => {
           onClose={() => setCheckoutModalOpen(false)}
           onConfirm={handleConfirmPayment}
           isProcessing={isProcessingPayment}
+          error={checkoutError}
         />
       )}
 
@@ -385,6 +452,8 @@ const App: React.FC = () => {
             onAddToCart={addToCart}
             onViewProduct={handleSelectProduct}
             onAddReview={handleAddReview}
+            onToggleWishlist={toggleWishlist}
+            isWishlisted={wishlist.includes(selectedProduct.id)}
         />
       )}
 

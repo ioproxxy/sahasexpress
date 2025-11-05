@@ -3,6 +3,7 @@ import { View } from '../types';
 
 interface HeaderProps {
   cartCount: number;
+  wishlistCount: number;
   setView: (view: View) => void;
   currentView: View;
   isAdminLoggedIn: boolean;
@@ -22,6 +23,19 @@ const CartIcon: React.FC<{ count: number }> = ({ count }) => (
   </div>
 );
 
+const WishlistIcon: React.FC<{ count: number }> = ({ count }) => (
+    <div className="relative">
+      <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-textPrimary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+      </svg>
+      {count > 0 && (
+        <span className="absolute -top-2 -right-2 bg-accent text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+          {count}
+        </span>
+      )}
+    </div>
+  );
+
 const NavLink: React.FC<{
   label: string;
   onClick: () => void;
@@ -38,7 +52,7 @@ const NavLink: React.FC<{
 );
 
 
-const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView, isAdminLoggedIn, onLogout }) => {
+const Header: React.FC<HeaderProps> = ({ cartCount, wishlistCount, setView, currentView, isAdminLoggedIn, onLogout }) => {
   return (
     <header className="bg-surface shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -48,6 +62,8 @@ const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView, isAdmi
           </div>
           <nav className="hidden md:flex items-center space-x-4">
             <NavLink label="Store" onClick={() => setView(View.Store)} isActive={currentView === View.Store} />
+            <NavLink label="Track Order" onClick={() => setView(View.TrackOrder)} isActive={currentView === View.TrackOrder} />
+            <NavLink label="Orders" onClick={() => setView(View.OrderHistory)} isActive={currentView === View.OrderHistory} />
              {isAdminLoggedIn && (
                 <button
                     onClick={onLogout}
@@ -57,7 +73,11 @@ const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView, isAdmi
                 </button>
             )}
           </nav>
-          <div className="flex items-center">
+          <div className="flex items-center space-x-2">
+            <button onClick={() => setView(View.Wishlist)} className="p-2 rounded-full text-textPrimary hover:bg-gray-200 transition-colors">
+              <span className="sr-only">View wishlist</span>
+              <WishlistIcon count={wishlistCount} />
+            </button>
             <button onClick={() => setView(View.Cart)} className="p-2 rounded-full text-textPrimary hover:bg-gray-200 transition-colors">
               <span className="sr-only">View cart</span>
               <CartIcon count={cartCount} />
@@ -67,6 +87,8 @@ const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView, isAdmi
       </div>
        <nav className="md:hidden bg-gray-100 p-2 flex justify-around items-center">
             <NavLink label="Store" onClick={() => setView(View.Store)} isActive={currentView === View.Store} />
+            <NavLink label="Track Order" onClick={() => setView(View.TrackOrder)} isActive={currentView === View.TrackOrder} />
+            <NavLink label="Orders" onClick={() => setView(View.OrderHistory)} isActive={currentView === View.OrderHistory} />
             {isAdminLoggedIn && (
                 <button
                     onClick={onLogout}

@@ -9,6 +9,8 @@ interface ProductDetailModalProps {
   onAddToCart: (product: Product, quantity: number, variant?: ProductVariant) => void;
   onViewProduct: (product: Product) => void;
   onAddReview: (productId: number, review: Review) => void;
+  onToggleWishlist: (productId: number) => void;
+  isWishlisted: boolean;
 }
 
 const StarRating: React.FC<{ rating: number; onRate?: (rating: number) => void; interactive?: boolean }> = ({ rating, onRate, interactive }) => {
@@ -41,7 +43,7 @@ const RecommendedProductCard: React.FC<{ product: Product, onView: () => void }>
     </div>
 );
 
-const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, allProducts, onClose, onAddToCart, onViewProduct, onAddReview }) => {
+const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, allProducts, onClose, onAddToCart, onViewProduct, onAddReview, onToggleWishlist, isWishlisted }) => {
     // State for recommendations
     const [recommendations, setRecommendations] = useState<Product[]>([]);
     const [isLoadingRecs, setIsLoadingRecs] = useState(true);
@@ -128,6 +130,7 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, allPro
     };
     
     const totalReviews = product.reviews?.length || 0;
+    const hasSpecifications = product.specifications && Object.keys(product.specifications).length > 0;
 
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex items-center justify-center z-50 p-4" role="dialog" aria-modal="true" onClick={onClose}>
@@ -178,10 +181,34 @@ const ProductDetailModal: React.FC<ProductDetailModalProps> = ({ product, allPro
                                     </div>
                                 )}
                                 <button onClick={handleAddToCartClick} className="flex-grow bg-primary text-white font-bold py-3 px-6 rounded-lg hover:bg-secondary transition-colors">Add to Cart</button>
+                                <button
+                                    onClick={() => onToggleWishlist(product.id)}
+                                    className="p-3 border border-gray-300 rounded-md text-red-500 hover:bg-red-50 transition-colors"
+                                    aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill={isWishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+                                    </svg>
+                                </button>
                             </div>
                         )}
                     </div>
                 </div>
+
+                {hasSpecifications && (
+                    <div className="border-t px-6 md:px-8 py-6">
+                        <h3 className="text-xl font-bold text-textPrimary mb-4">Specifications</h3>
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                            {Object.entries(product.specifications!).map(([key, value]) => (
+                                <div key={key} className="flex">
+                                    <dt className="font-semibold text-textPrimary w-1/3">{key}:</dt>
+                                    <dd className="text-textSecondary w-2/3">{value}</dd>
+                                </div>
+                            ))}
+                        </dl>
+                    </div>
+                )}
+
 
                 <div className="bg-background border-t p-6 md:p-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
                     <div className="lg:col-span-2">

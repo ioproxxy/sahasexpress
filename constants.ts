@@ -9,6 +9,12 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 15,
     imageUrl: 'https://picsum.photos/seed/headphones/400/400',
     description: 'Immerse yourself in pure sound with our AI-powered noise-cancelling headphones. All-day comfort and crystal-clear calls.',
+    specifications: {
+      'Connectivity': 'Bluetooth 5.2, AUX',
+      'Battery Life': 'Up to 30 hours',
+      'Weight': '254g',
+      'Driver Size': '40mm',
+    },
     reviews: [
       { author: 'Alex', rating: 5, comment: 'Absolutely amazing sound quality! The noise cancelling is top-notch.' },
       { author: 'Maria', rating: 4, comment: 'Very comfortable and great for long flights, but the app could be better.' },
@@ -22,6 +28,11 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 30, // Total stock is now sum of variants
     imageUrl: 'https://picsum.photos/seed/jacket/400/400',
     description: 'A stylish and waterproof jacket designed for the modern adventurer. Breathable fabric with multiple utility pockets.',
+    specifications: {
+      'Material': 'Gore-Tex Shell, Fleece Lining',
+      'Water Resistance': '10,000mm',
+      'Pockets': '5 external, 2 internal',
+    },
     reviews: [
         { author: 'Sam', rating: 5, comment: 'Perfect fit and truly waterproof. Looks great too!' }
     ],
@@ -46,6 +57,12 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 8,
     imageUrl: 'https://picsum.photos/seed/projector/400/400',
     description: 'Transform any space into a cinema with this compact 4K projector. Features auto-focus and built-in streaming apps.',
+    specifications: {
+        'Resolution': '3840 x 2160 (4K)',
+        'Brightness': '1500 ANSI Lumens',
+        'Dimensions': '15cm x 15cm x 5cm',
+        'Connectivity': 'HDMI, USB-C, Wi-Fi 6',
+    },
     reviews: []
   },
   {
@@ -56,6 +73,12 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 22,
     imageUrl: 'https://picsum.photos/seed/watch/400/400',
     description: 'A sleek and sophisticated timepiece with a genuine leather strap and sapphire crystal glass. Water-resistant up to 50m.',
+    specifications: {
+        'Case Size': '42mm',
+        'Material': 'Stainless Steel, Leather',
+        'Crystal': 'Sapphire',
+        'Water Resistance': '5 ATM (50 meters)',
+    },
     reviews: [
         { author: 'Chloe', rating: 5, comment: 'Elegant and timeless. I get compliments on it all the time.' },
         { author: 'Ben', rating: 4, comment: 'Love the design. The strap took a few days to break in.' }
@@ -69,6 +92,12 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 12,
     imageUrl: 'https://picsum.photos/seed/keyboard/400/400',
     description: 'Experience superior typing with our customizable mechanical keyboard. Features hot-swappable switches and RGB backlighting.',
+    specifications: {
+        'Switch Type': 'Brown Mechanical (Tactile)',
+        'Layout': '75% Compact',
+        'Connectivity': 'USB-C, Bluetooth 5.1',
+        'Dimensions': '31.5cm x 12.5cm x 4cm',
+    },
     reviews: [
         { author: 'DevUser', rating: 5, comment: 'The best keyboard I have ever owned. Typing is a dream.' }
     ]
@@ -81,6 +110,12 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 50,
     imageUrl: 'https://picsum.photos/seed/charger/400/400',
     description: 'Power up your phone, watch, and earbuds simultaneously with this elegant 3-in-1 wireless charging station.',
+    specifications: {
+        'Phone Output': '15W Max',
+        'Watch Output': '5W',
+        'Earbuds Output': '5W',
+        'Dimensions': '18cm x 9cm x 2cm',
+    },
     reviews: []
   },
   {
@@ -91,6 +126,12 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 40,
     imageUrl: 'https://picsum.photos/seed/backpack/400/400',
     description: 'Durable and spacious, this backpack is perfect for work or travel. Includes a padded laptop sleeve and anti-theft pocket.',
+    specifications: {
+        'Capacity': '25 Liters',
+        'Material': 'Waxed Canvas, Leather accents',
+        'Laptop Sleeve': 'Fits up to 15-inch laptop',
+        'Dimensions': '45cm x 30cm x 15cm',
+    },
     reviews: [
         { author: 'TravelerTom', rating: 5, comment: 'Holds everything I need for a weekend trip. Very sturdy.' },
         { author: 'StudentLife', rating: 4, comment: 'Great backpack, lots of pockets. Wish it had a water bottle holder on the side.' }
@@ -104,6 +145,12 @@ export const MOCK_PRODUCTS: Product[] = [
     stock: 100,
     imageUrl: 'https://picsum.photos/seed/powerstrip/400/400',
     description: 'Control your devices from anywhere with this smart power strip. Compatible with Alexa and Google Assistant.',
+    specifications: {
+        'Outlets': '4 AC, 3 USB-A',
+        'Cord Length': '1.8 meters',
+        'Wi-Fi': '2.4GHz only',
+        'Max Load': '10A',
+    },
     reviews: []
   }
 ];

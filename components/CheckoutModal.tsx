@@ -5,14 +5,15 @@ interface CheckoutModalProps {
   onClose: () => void;
   onConfirm: (phone: string) => void;
   isProcessing: boolean;
+  error?: string | null;
 }
 
-const CheckoutModal: React.FC<CheckoutModalProps> = ({ onClose, onConfirm, isProcessing }) => {
+const CheckoutModal: React.FC<CheckoutModalProps> = ({ onClose, onConfirm, isProcessing, error }) => {
   const [phone, setPhone] = useState('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (phone.trim().length >= 10) {
+    if (phone.trim().length >= 10 && !isProcessing) {
       onConfirm(phone);
     }
   };
@@ -20,7 +21,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ onClose, onConfirm, isPro
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
       <div className="bg-surface rounded-lg shadow-xl w-full max-w-md p-6 relative">
-        <button onClick={onClose} className="absolute top-3 right-3 text-gray-500 hover:text-gray-800">
+        <button onClick={onClose} disabled={isProcessing} className="absolute top-3 right-3 text-gray-500 hover:text-gray-800 disabled:opacity-50">
           <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -38,6 +39,7 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ onClose, onConfirm, isPro
               placeholder="e.g., 254712345678"
               className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-primary focus:border-primary sm:text-sm"
               required
+              disabled={isProcessing}
             />
           </div>
           <button
@@ -56,6 +58,11 @@ const CheckoutModal: React.FC<CheckoutModalProps> = ({ onClose, onConfirm, isPro
             ) : 'Confirm Payment'}
           </button>
         </form>
+        {error && (
+            <p className="text-red-600 text-sm mt-4 text-center font-medium bg-red-50 p-3 rounded-md border border-red-200">
+                {error}
+            </p>
+        )}
         <div className="mt-4 text-center text-xs text-gray-500">
           <p>You will receive an STK push on your phone to complete the payment.</p>
         </div>

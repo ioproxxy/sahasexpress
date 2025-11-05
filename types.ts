@@ -1,3 +1,5 @@
+// FIX: Removed self-import of 'Review' which was causing a conflict.
+
 export interface Review {
   author: string;
   rating: number; // 1-5
@@ -24,6 +26,7 @@ export interface Product {
   stock: number; // Will be the total stock of all variants if they exist
   imageUrl: string;
   description: string;
+  specifications?: { [key: string]: string };
   reviews?: Review[];
   variantOptions?: VariantOption[];
   variants?: ProductVariant[];
@@ -49,6 +52,8 @@ export enum View {
   TrackOrder,
   Admin,
   OrderConfirmation,
+  Wishlist,
+  OrderHistory,
 }
 
 export enum SortOption {

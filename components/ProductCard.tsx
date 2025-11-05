@@ -5,6 +5,8 @@ interface ProductCardProps {
   product: Product;
   onAddToCart: (product: Product, quantity: number, variant?: ProductVariant) => void;
   onViewDetails: (product: Product) => void;
+  onToggleWishlist: (productId: number) => void;
+  isWishlisted: boolean;
 }
 
 const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
@@ -27,7 +29,7 @@ const StarRating: React.FC<{ rating: number }> = ({ rating }) => {
 };
 
 
-const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails }) => {
+const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewDetails, onToggleWishlist, isWishlisted }) => {
   const hasVariants = product.variantOptions && product.variantOptions.length > 0;
   
   const [quantity, setQuantity] = useState(1);
@@ -76,7 +78,16 @@ const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onViewD
   const totalReviews = product.reviews?.length || 0;
 
   return (
-    <div className="bg-surface rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform transform hover:-translate-y-1">
+    <div className="bg-surface rounded-lg shadow-lg overflow-hidden flex flex-col transition-transform transform hover:-translate-y-1 relative">
+      <button
+        onClick={() => onToggleWishlist(product.id)}
+        className="absolute top-2 right-2 z-10 p-2 bg-white/70 rounded-full hover:bg-white transition-colors"
+        aria-label={isWishlisted ? 'Remove from wishlist' : 'Add to wishlist'}
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-red-500" fill={isWishlisted ? 'currentColor' : 'none'} viewBox="0 0 24 24" stroke="currentColor">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 016.364 0L12 7.636l1.318-1.318a4.5 4.5 0 016.364 6.364L12 20.364l-7.682-7.682a4.5 4.5 0 010-6.364z" />
+        </svg>
+      </button>
       <div className="relative pb-[100%]">
         <img className="absolute h-full w-full object-cover" src={product.imageUrl} alt={product.name} />
       </div>
