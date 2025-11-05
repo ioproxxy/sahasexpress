@@ -10,6 +10,7 @@ import AdminDashboard from './components/AdminDashboard';
 import AdminLogin from './components/AdminLogin';
 import WhatsAppButton from './components/WhatsAppButton';
 import ProductDetailModal from './components/ProductDetailModal';
+import OrderConfirmation from './components/OrderConfirmation';
 
 
 const App: React.FC = () => {
@@ -116,10 +117,10 @@ const App: React.FC = () => {
       setCart([]);
       setProcessingPayment(false);
       setCheckoutModalOpen(false);
-      alert(`Order placed successfully! Your Order ID is: ${orderId}`);
+      setCurrentView(View.OrderConfirmation);
       // Simulate order status progression
-      setTimeout(() => setLastOrder(prev => prev ? {...prev, status: 'Processing'} : null), 10000);
-      setTimeout(() => setLastOrder(prev => prev ? {...prev, status: 'Shipped'} : null), 30000);
+      setTimeout(() => setLastOrder(prev => prev && prev.id === newOrder.id ? {...prev, status: 'Processing'} : prev), 10000);
+      setTimeout(() => setLastOrder(prev => prev && prev.id === newOrder.id ? {...prev, status: 'Shipped'} : prev), 30000);
     }, 2000);
   };
 
@@ -241,6 +242,8 @@ const App: React.FC = () => {
         );
       case View.TrackOrder:
         return <OrderTracking lastOrder={lastOrder} />;
+      case View.OrderConfirmation:
+        return <OrderConfirmation order={lastOrder} onContinueShopping={() => setCurrentView(View.Store)} />;
       case View.Admin:
         return isAdminLoggedIn
             ? <AdminDashboard

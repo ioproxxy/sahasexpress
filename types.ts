@@ -48,6 +48,7 @@ export enum View {
   Cart,
   TrackOrder,
   Admin,
+  OrderConfirmation,
 }
 
 export enum SortOption {
