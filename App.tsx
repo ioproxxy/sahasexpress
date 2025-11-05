@@ -12,12 +12,18 @@ import WhatsAppButton from './components/WhatsAppButton';
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.Store);
+  const [products, setProducts] = useState<Product[]>(MOCK_PRODUCTS);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isCheckoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [isProcessingPayment, setProcessingPayment] = useState(false);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
   const [sortOption, setSortOption] = useState<SortOption>(SortOption.Default);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState<string[]>(() => {
+    const initialCategories = MOCK_PRODUCTS.map(p => p.category);
+    return [...new Set(initialCategories)].sort();
+  });
 
 
   const addToCart = useCallback((product: Product, quantityToAdd: number) => {
@@ -93,8 +99,69 @@ const App: React.FC = () => {
     alert("You have been logged out.");
   };
 
+  const handleAddProduct = (newProductData: Omit<Product, 'id'>) => {
+    const newProduct: Product = {
+        ...newProductData,
+        id: Date.now(), // Using timestamp for a simple unique ID
+    };
+    setProducts(prevProducts => [...prevProducts, newProduct]);
+    alert(`Product "${newProduct.name}" has been added successfully!`);
+  };
+
+  const handleBulkAddProducts = (newProductsData: Omit<Product, 'id'>[]) => {
+    const productsWithIds: Product[] = newProductsData.map((p, index) => ({
+      ...p,
+      id: Date.now() + index, // Simple unique ID generation to avoid collisions in quick succession
+    }));
+    setProducts(prevProducts => [...prevProducts, ...productsWithIds]);
+  };
+  
+  const handleUpdateProduct = (updatedProduct: Product) => {
+    setProducts(prevProducts => 
+        prevProducts.map(p => p.id === updatedProduct.id ? updatedProduct : p)
+    );
+    alert(`Product "${updatedProduct.name}" has been updated successfully!`);
+  };
+
+
+  const handleAddCategory = (categoryName: string) => {
+    const trimmedName = categoryName.trim();
+    if (trimmedName && !categories.find(c => c.toLowerCase() === trimmedName.toLowerCase())) {
+        setCategories(prev => [...prev, trimmedName].sort());
+        alert(`Category "${trimmedName}" has been added.`);
+    } else {
+        alert('Category name cannot be empty or already exists.');
+    }
+  };
+
+  const handleDeleteCategory = (categoryToDelete: string) => {
+      const isCategoryInUse = products.some(p => p.category === categoryToDelete);
+      if (isCategoryInUse) {
+          const confirmDelete = window.confirm(
+              `Warning: The category "${categoryToDelete}" is currently in use by one or more products. Deleting it will not remove it from existing products but will prevent it from being assigned to new ones. Do you want to proceed?`
+          );
+          if (!confirmDelete) return;
+      } else {
+          const confirmDelete = window.confirm(
+            `Are you sure you want to delete the category "${categoryToDelete}"?`
+          );
+          if (!confirmDelete) return;
+      }
+      setCategories(prev => prev.filter(c => c !== categoryToDelete));
+  };
+
+
   const getSortedProducts = () => {
-    const productsToSort = [...MOCK_PRODUCTS];
+    let productsToSort = [...products];
+
+    // Filter by search query
+    if (searchQuery.trim() !== '') {
+      productsToSort = productsToSort.filter(product =>
+        product.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    // Sort the filtered products
     switch (sortOption) {
       case SortOption.PriceAsc:
         return productsToSort.sort((a, b) => a.price - b.price);
@@ -106,7 +173,7 @@ const App: React.FC = () => {
         return productsToSort.sort((a, b) => b.name.localeCompare(a.name));
       case SortOption.Default:
       default:
-        return MOCK_PRODUCTS;
+        return productsToSort;
     }
   };
 
@@ -125,14 +192,40 @@ const App: React.FC = () => {
         return <OrderTracking lastOrder={lastOrder} />;
       case View.Admin:
         return isAdminLoggedIn
-            ? <AdminDashboard products={MOCK_PRODUCTS} />
+            ? <AdminDashboard
+                products={products}
+                onAddProduct={handleAddProduct}
+                onBulkAddProducts={handleBulkAddProducts}
+                categories={categories}
+                onAddCategory={handleAddCategory}
+                onDeleteCategory={handleDeleteCategory}
+                onUpdateProduct={handleUpdateProduct}
+              />
             : <AdminLogin onLoginSuccess={handleAdminLoginSuccess} />;
       case View.Store:
       default:
+        const displayedProducts = getSortedProducts();
         return (
           <div>
-            <div className="flex justify-end items-center p-4 sm:px-6 lg:px-8">
-               <div className="flex items-center space-x-2">
+            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 p-4 sm:px-6 lg:px-8 border-b">
+               {/* Search Bar */}
+              <div className="relative w-full sm:w-1/2 lg:w-1/3">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3">
+                      <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                          <path fillRule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clipRule="evenodd" />
+                      </svg>
+                  </span>
+                  <input
+                      type="search"
+                      id="product-search"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder="Search for products..."
+                      className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-primary focus:border-primary sm:text-sm"
+                  />
+              </div>
+              {/* Sort Dropdown */}
+              <div className="flex items-center space-x-2 w-full sm:w-auto">
                 <label htmlFor="sort-select" className="text-sm font-medium text-textSecondary">Sort by:</label>
                 <select
                     id="sort-select"
@@ -148,11 +241,22 @@ const App: React.FC = () => {
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8 pb-8">
-              {getSortedProducts().map((product) => (
-                <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
-              ))}
-            </div>
+
+            {displayedProducts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8 py-8">
+                  {displayedProducts.map((product) => (
+                    <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                  ))}
+                </div>
+            ) : (
+                <div className="text-center py-20">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-16 w-16 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <h2 className="mt-4 text-2xl font-semibold text-textPrimary">No Products Found</h2>
+                    <p className="mt-2 text-textSecondary">Your search for "{searchQuery}" did not match any products.</p>
+                </div>
+            )}
           </div>
         );
     }
@@ -172,8 +276,17 @@ const App: React.FC = () => {
       <main className="flex-grow container mx-auto">
         {renderView()}
       </main>
-      <footer className="bg-surface text-center p-4 text-textSecondary text-sm border-t">
-        <p>&copy; {new Date().getFullYear()} Sahas Express. All rights reserved.</p>
+      <footer className="bg-surface p-4 text-textSecondary text-sm border-t">
+        <div className="container mx-auto flex flex-col sm:flex-row justify-between items-center">
+            <p>&copy; {new Date().getFullYear()} Sahas Express. All rights reserved.</p>
+            <button
+              onClick={() => setCurrentView(View.Admin)}
+              className="text-xs text-gray-400 hover:text-primary mt-2 sm:mt-0 transition-colors"
+              aria-label="Admin section"
+            >
+              {isAdminLoggedIn ? 'Admin Dashboard' : 'Admin Login'}
+            </button>
+        </div>
       </footer>
 
       {isCheckoutModalOpen && (

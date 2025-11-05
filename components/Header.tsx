@@ -49,7 +49,6 @@ const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView, isAdmi
           <nav className="hidden md:flex items-center space-x-4">
             <NavLink label="Store" onClick={() => setView(View.Store)} isActive={currentView === View.Store} />
             <NavLink label="Track Order" onClick={() => setView(View.TrackOrder)} isActive={currentView === View.TrackOrder} />
-            <NavLink label="Admin" onClick={() => setView(View.Admin)} isActive={currentView === View.Admin} />
              {isAdminLoggedIn && (
                 <button
                     onClick={onLogout}
@@ -70,7 +69,6 @@ const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView, isAdmi
        <nav className="md:hidden bg-gray-100 p-2 flex justify-around items-center">
             <NavLink label="Store" onClick={() => setView(View.Store)} isActive={currentView === View.Store} />
             <NavLink label="Track Order" onClick={() => setView(View.TrackOrder)} isActive={currentView === View.TrackOrder} />
-            <NavLink label="Admin" onClick={() => setView(View.Admin)} isActive={currentView === View.Admin} />
             {isAdminLoggedIn && (
                 <button
                     onClick={onLogout}
