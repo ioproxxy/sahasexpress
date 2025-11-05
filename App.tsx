@@ -1,6 +1,5 @@
-
 import React, { useState, useCallback } from 'react';
-import { View, Product, CartItem, Order } from './types';
+import { View, Product, CartItem, Order, SortOption } from './types';
 import { MOCK_PRODUCTS } from './constants';
 import Header from './components/Header';
 import ProductCard from './components/ProductCard';
@@ -8,6 +7,7 @@ import CartView from './components/CartView';
 import CheckoutModal from './components/CheckoutModal';
 import OrderTracking from './components/OrderTracking';
 import AdminDashboard from './components/AdminDashboard';
+import AdminLogin from './components/AdminLogin';
 import WhatsAppButton from './components/WhatsAppButton';
 
 const App: React.FC = () => {
@@ -16,19 +16,22 @@ const App: React.FC = () => {
   const [isCheckoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [isProcessingPayment, setProcessingPayment] = useState(false);
   const [lastOrder, setLastOrder] = useState<Order | null>(null);
+  const [sortOption, setSortOption] = useState<SortOption>(SortOption.Default);
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
 
-  const addToCart = useCallback((product: Product) => {
+
+  const addToCart = useCallback((product: Product, quantityToAdd: number) => {
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
-        if (existingItem.quantity < product.stock) {
-            return prevCart.map((item) =>
-            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-            );
-        }
-        return prevCart;
+        const newQuantity = existingItem.quantity + quantityToAdd;
+        const finalQuantity = Math.min(newQuantity, product.stock);
+        return prevCart.map((item) =>
+          item.id === product.id ? { ...item, quantity: finalQuantity } : item
+        );
       }
-      return [...prevCart, { ...product, quantity: 1 }];
+      const finalQuantity = Math.min(quantityToAdd, product.stock);
+      return [...prevCart, { ...product, quantity: finalQuantity }];
     });
   }, []);
 
@@ -80,6 +83,33 @@ const App: React.FC = () => {
     }, 2000);
   };
 
+  const handleAdminLoginSuccess = () => {
+    setIsAdminLoggedIn(true);
+  };
+
+  const handleLogout = () => {
+    setIsAdminLoggedIn(false);
+    setCurrentView(View.Store);
+    alert("You have been logged out.");
+  };
+
+  const getSortedProducts = () => {
+    const productsToSort = [...MOCK_PRODUCTS];
+    switch (sortOption) {
+      case SortOption.PriceAsc:
+        return productsToSort.sort((a, b) => a.price - b.price);
+      case SortOption.PriceDesc:
+        return productsToSort.sort((a, b) => b.price - a.price);
+      case SortOption.NameAsc:
+        return productsToSort.sort((a, b) => a.name.localeCompare(b.name));
+      case SortOption.NameDesc:
+        return productsToSort.sort((a, b) => b.name.localeCompare(a.name));
+      case SortOption.Default:
+      default:
+        return MOCK_PRODUCTS;
+    }
+  };
+
   const renderView = () => {
     switch (currentView) {
       case View.Cart:
@@ -94,14 +124,35 @@ const App: React.FC = () => {
       case View.TrackOrder:
         return <OrderTracking lastOrder={lastOrder} />;
       case View.Admin:
-        return <AdminDashboard products={MOCK_PRODUCTS} />;
+        return isAdminLoggedIn
+            ? <AdminDashboard products={MOCK_PRODUCTS} />
+            : <AdminLogin onLoginSuccess={handleAdminLoginSuccess} />;
       case View.Store:
       default:
         return (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 p-4 sm:p-6 lg:p-8">
-            {MOCK_PRODUCTS.map((product) => (
-              <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
-            ))}
+          <div>
+            <div className="flex justify-end items-center p-4 sm:px-6 lg:px-8">
+               <div className="flex items-center space-x-2">
+                <label htmlFor="sort-select" className="text-sm font-medium text-textSecondary">Sort by:</label>
+                <select
+                    id="sort-select"
+                    value={sortOption}
+                    onChange={(e) => setSortOption(e.target.value as SortOption)}
+                    className="block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-primary focus:border-primary sm:text-sm rounded-md"
+                >
+                    <option value={SortOption.Default}>Default</option>
+                    <option value={SortOption.PriceAsc}>Price: Low to High</option>
+                    <option value={SortOption.PriceDesc}>Price: High to Low</option>
+                    <option value={SortOption.NameAsc}>Name: A to Z</option>
+                    <option value={SortOption.NameDesc}>Name: Z to A</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8 pb-8">
+              {getSortedProducts().map((product) => (
+                <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
+              ))}
+            </div>
           </div>
         );
     }
@@ -111,7 +162,13 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <Header cartCount={cartCount} setView={setCurrentView} currentView={currentView} />
+      <Header
+        cartCount={cartCount}
+        setView={setCurrentView}
+        currentView={currentView}
+        isAdminLoggedIn={isAdminLoggedIn}
+        onLogout={handleLogout}
+      />
       <main className="flex-grow container mx-auto">
         {renderView()}
       </main>

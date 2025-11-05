@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Product } from '../types';
 import { MOCK_SALES_DATA } from '../constants';
@@ -50,7 +49,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ products }) => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <div className="bg-surface p-6 rounded-lg shadow-md">
           <h3 className="text-textSecondary text-sm font-medium">Total Sales</h3>
-          <p className="text-3xl font-semibold text-textPrimary mt-2">$34,580</p>
+          <p className="text-3xl font-semibold text-textPrimary mt-2">Ksh 34,580</p>
         </div>
         <div className="bg-surface p-6 rounded-lg shadow-md">
           <h3 className="text-textSecondary text-sm font-medium">New Orders</h3>
@@ -103,7 +102,7 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ products }) => {
               {products.map(product => (
                 <tr key={product.id}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-textPrimary">{product.name}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-textSecondary">${product.price.toFixed(2)}</td>
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-textSecondary">Ksh {product.price.toFixed(2)}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-textSecondary">{product.stock}</td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button className="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { View } from '../types';
 
@@ -6,6 +5,8 @@ interface HeaderProps {
   cartCount: number;
   setView: (view: View) => void;
   currentView: View;
+  isAdminLoggedIn: boolean;
+  onLogout: () => void;
 }
 
 const CartIcon: React.FC<{ count: number }> = ({ count }) => (
@@ -37,7 +38,7 @@ const NavLink: React.FC<{
 );
 
 
-const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView }) => {
+const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView, isAdminLoggedIn, onLogout }) => {
   return (
     <header className="bg-surface shadow-md sticky top-0 z-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -49,6 +50,14 @@ const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView }) => {
             <NavLink label="Store" onClick={() => setView(View.Store)} isActive={currentView === View.Store} />
             <NavLink label="Track Order" onClick={() => setView(View.TrackOrder)} isActive={currentView === View.TrackOrder} />
             <NavLink label="Admin" onClick={() => setView(View.Admin)} isActive={currentView === View.Admin} />
+             {isAdminLoggedIn && (
+                <button
+                    onClick={onLogout}
+                    className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-textPrimary hover:bg-gray-200"
+                >
+                    Logout
+                </button>
+            )}
           </nav>
           <div className="flex items-center">
             <button onClick={() => setView(View.Cart)} className="p-2 rounded-full text-textPrimary hover:bg-gray-200 transition-colors">
@@ -58,10 +67,18 @@ const Header: React.FC<HeaderProps> = ({ cartCount, setView, currentView }) => {
           </div>
         </div>
       </div>
-       <nav className="md:hidden bg-gray-100 p-2 flex justify-around">
+       <nav className="md:hidden bg-gray-100 p-2 flex justify-around items-center">
             <NavLink label="Store" onClick={() => setView(View.Store)} isActive={currentView === View.Store} />
             <NavLink label="Track Order" onClick={() => setView(View.TrackOrder)} isActive={currentView === View.TrackOrder} />
             <NavLink label="Admin" onClick={() => setView(View.Admin)} isActive={currentView === View.Admin} />
+            {isAdminLoggedIn && (
+                <button
+                    onClick={onLogout}
+                    className="px-4 py-2 rounded-md text-sm font-medium transition-colors text-textPrimary hover:bg-gray-200"
+                >
+                    Logout
+                </button>
+            )}
        </nav>
     </header>
   );

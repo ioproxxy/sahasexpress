@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { CartItem } from '../types';
 
@@ -35,7 +34,7 @@ const CartView: React.FC<CartViewProps> = ({ cartItems, onUpdateQuantity, onRemo
                 <img src={item.imageUrl} alt={item.name} className="h-20 w-20 rounded-md object-cover mr-4" />
                 <div>
                   <h3 className="text-lg font-medium text-textPrimary">{item.name}</h3>
-                  <p className="text-textSecondary">${item.price.toFixed(2)}</p>
+                  <p className="text-textSecondary">Ksh {item.price.toFixed(2)}</p>
                 </div>
               </div>
               <div className="flex items-center space-x-4">
@@ -55,7 +54,7 @@ const CartView: React.FC<CartViewProps> = ({ cartItems, onUpdateQuantity, onRemo
         </ul>
         <div className="p-4 bg-gray-50 rounded-b-lg flex flex-col sm:flex-row items-center justify-between">
           <div className="text-xl font-bold text-textPrimary mb-4 sm:mb-0">
-            Subtotal: <span className="text-primary">${subtotal.toFixed(2)}</span>
+            Subtotal: <span className="text-primary">Ksh {subtotal.toFixed(2)}</span>
           </div>
           <button
             onClick={onCheckout}

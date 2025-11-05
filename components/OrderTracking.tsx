@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Order } from '../types';
 
@@ -77,7 +76,7 @@ const OrderTracking: React.FC<OrderTrackingProps> = ({ lastOrder }) => {
             <h3 className="text-xl font-semibold text-textPrimary">Order Details</h3>
             <div className="mt-4 space-y-2 text-textSecondary">
               <p><strong>Order ID:</strong> {foundOrder.id}</p>
-              <p><strong>Total:</strong> ${foundOrder.total.toFixed(2)}</p>
+              <p><strong>Total:</strong> Ksh {foundOrder.total.toFixed(2)}</p>
               <p><strong>Date:</strong> {foundOrder.timestamp.toLocaleString()}</p>
               <p><strong>Status:</strong> <span className="font-semibold text-primary">{foundOrder.status}</span></p>
             </div>
