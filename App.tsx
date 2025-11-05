@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { View, Product, CartItem, Order, SortOption } from './types';
+import { View, Product, CartItem, Order, SortOption, Review, ProductVariant } from './types';
 import { MOCK_PRODUCTS } from './constants';
 import Header from './components/Header';
 import ProductCard from './components/ProductCard';
@@ -9,6 +9,8 @@ import OrderTracking from './components/OrderTracking';
 import AdminDashboard from './components/AdminDashboard';
 import AdminLogin from './components/AdminLogin';
 import WhatsAppButton from './components/WhatsAppButton';
+import ProductDetailModal from './components/ProductDetailModal';
+
 
 const App: React.FC = () => {
   const [currentView, setCurrentView] = useState<View>(View.Store);
@@ -24,41 +26,73 @@ const App: React.FC = () => {
     const initialCategories = MOCK_PRODUCTS.map(p => p.category);
     return [...new Set(initialCategories)].sort();
   });
+  const [categoryFilter, setCategoryFilter] = useState<string>('All');
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
 
-  const addToCart = useCallback((product: Product, quantityToAdd: number) => {
+  const handleSelectProduct = (product: Product) => {
+    setSelectedProduct(product);
+  };
+
+  const handleCloseModal = () => {
+    setSelectedProduct(null);
+  };
+
+
+  const addToCart = useCallback((product: Product, quantityToAdd: number, variant?: ProductVariant) => {
     setCart((prevCart) => {
-      const existingItem = prevCart.find((item) => item.id === product.id);
+      const cartItemId = variant ? `${product.id}-${variant.id}` : `${product.id}`;
+      const existingItem = prevCart.find((item) => {
+        const itemId = item.variant ? `${item.id}-${item.variant.id}` : `${item.id}`;
+        return itemId === cartItemId;
+      });
+
+      const stockLimit = variant ? variant.stock : product.stock;
+
       if (existingItem) {
         const newQuantity = existingItem.quantity + quantityToAdd;
-        const finalQuantity = Math.min(newQuantity, product.stock);
+        const finalQuantity = Math.min(newQuantity, stockLimit);
         return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: finalQuantity } : item
+          (item.variant ? `${item.id}-${item.variant.id}` : `${item.id}`) === cartItemId 
+          ? { ...item, quantity: finalQuantity } 
+          : item
         );
       }
-      const finalQuantity = Math.min(quantityToAdd, product.stock);
-      return [...prevCart, { ...product, quantity: finalQuantity }];
+      
+      const finalQuantity = Math.min(quantityToAdd, stockLimit);
+      return [...prevCart, { ...product, quantity: finalQuantity, variant }];
     });
   }, []);
 
-  const updateCartQuantity = useCallback((productId: number, quantity: number) => {
+  const updateCartQuantity = useCallback((productId: number, quantity: number, variantId?: string) => {
     setCart((prevCart) => {
       if (quantity <= 0) {
-        return prevCart.filter((item) => item.id !== productId);
+        return prevCart.filter((item) => {
+          const itemId = item.variant ? `${item.id}-${item.variant.id}` : `${item.id}`;
+          const targetId = variantId ? `${productId}-${variantId}` : `${productId}`;
+          return itemId !== targetId;
+        });
       }
-      const itemToUpdate = prevCart.find(item => item.id === productId);
-      if (itemToUpdate && quantity > itemToUpdate.stock) {
-          // Do not update if desired quantity exceeds stock
-          return prevCart;
-      }
-      return prevCart.map((item) =>
-        item.id === productId ? { ...item, quantity } : item
-      );
+
+      return prevCart.map((item) => {
+        const itemId = item.variant ? `${item.id}-${item.variant.id}` : `${item.id}`;
+        const targetId = variantId ? `${productId}-${variantId}` : `${productId}`;
+        if (itemId === targetId) {
+          const stockLimit = item.variant ? item.variant.stock : item.stock;
+          const newQuantity = Math.min(quantity, stockLimit);
+          return { ...item, quantity: newQuantity };
+        }
+        return item;
+      });
     });
   }, []);
 
-  const removeFromCart = useCallback((productId: number) => {
-    setCart((prevCart) => prevCart.filter((item) => item.id !== productId));
+  const removeFromCart = useCallback((productId: number, variantId?: string) => {
+    setCart((prevCart) => prevCart.filter((item) => {
+        const itemId = item.variant ? `${item.id}-${item.variant.id}` : `${item.id}`;
+        const targetId = variantId ? `${productId}-${variantId}` : `${productId}`;
+        return itemId !== targetId;
+    }));
   }, []);
 
   const handleCheckout = () => {
@@ -149,10 +183,27 @@ const App: React.FC = () => {
       }
       setCategories(prev => prev.filter(c => c !== categoryToDelete));
   };
+  
+  const handleAddReview = (productId: number, review: Review) => {
+    setProducts(prevProducts =>
+      prevProducts.map(p => {
+        if (p.id === productId) {
+          const updatedReviews = p.reviews ? [...p.reviews, review] : [review];
+          return { ...p, reviews: updatedReviews };
+        }
+        return p;
+      })
+    );
+  };
 
 
   const getSortedProducts = () => {
     let productsToSort = [...products];
+
+    // Filter by category
+    if (categoryFilter !== 'All') {
+        productsToSort = productsToSort.filter(p => p.category === categoryFilter);
+    }
 
     // Filter by search query
     if (searchQuery.trim() !== '') {
@@ -241,11 +292,37 @@ const App: React.FC = () => {
                 </select>
               </div>
             </div>
+             {/* Category Filters */}
+            <div className="p-4 sm:px-6 lg:px-8 border-b">
+                <h3 className="text-base font-semibold text-textPrimary mb-3">Shop by Category</h3>
+                <div className="flex flex-wrap gap-2">
+                    <button 
+                        onClick={() => setCategoryFilter('All')} 
+                        className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${categoryFilter === 'All' ? 'bg-primary text-white' : 'bg-gray-200 text-textPrimary hover:bg-gray-300'}`}
+                    >
+                        All
+                    </button>
+                    {categories.map(cat => (
+                        <button 
+                            key={cat} 
+                            onClick={() => setCategoryFilter(cat)} 
+                            className={`px-4 py-1.5 text-sm font-medium rounded-full transition-colors ${categoryFilter === cat ? 'bg-primary text-white' : 'bg-gray-200 text-textPrimary hover:bg-gray-300'}`}
+                        >
+                            {cat}
+                        </button>
+                    ))}
+                </div>
+            </div>
 
             {displayedProducts.length > 0 ? (
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 px-4 sm:px-6 lg:px-8 py-8">
                   {displayedProducts.map((product) => (
-                    <ProductCard key={product.id} product={product} onAddToCart={addToCart} />
+                    <ProductCard 
+                      key={product.id} 
+                      product={product} 
+                      onAddToCart={addToCart} 
+                      onViewDetails={handleSelectProduct}
+                    />
                   ))}
                 </div>
             ) : (
@@ -296,6 +373,18 @@ const App: React.FC = () => {
           isProcessing={isProcessingPayment}
         />
       )}
+
+      {selectedProduct && (
+        <ProductDetailModal
+            product={selectedProduct}
+            allProducts={products}
+            onClose={handleCloseModal}
+            onAddToCart={addToCart}
+            onViewProduct={handleSelectProduct}
+            onAddReview={handleAddReview}
+        />
+      )}
+
       <WhatsAppButton />
     </div>
   );

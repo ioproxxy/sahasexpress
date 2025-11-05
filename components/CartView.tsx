@@ -3,8 +3,8 @@ import { CartItem } from '../types';
 
 interface CartViewProps {
   cartItems: CartItem[];
-  onUpdateQuantity: (productId: number, quantity: number) => void;
-  onRemoveItem: (productId: number) => void;
+  onUpdateQuantity: (productId: number, quantity: number, variantId?: string) => void;
+  onRemoveItem: (productId: number, variantId?: string) => void;
   onCheckout: () => void;
 }
 
@@ -28,29 +28,39 @@ const CartView: React.FC<CartViewProps> = ({ cartItems, onUpdateQuantity, onRemo
       <h2 className="text-3xl font-bold text-textPrimary mb-6">Your Cart</h2>
       <div className="bg-surface rounded-lg shadow-md">
         <ul className="divide-y divide-gray-200">
-          {cartItems.map((item) => (
-            <li key={item.id} className="p-4 flex flex-col sm:flex-row items-center justify-between">
-              <div className="flex items-center w-full sm:w-auto mb-4 sm:mb-0">
-                <img src={item.imageUrl} alt={item.name} className="h-20 w-20 rounded-md object-cover mr-4" />
-                <div>
-                  <h3 className="text-lg font-medium text-textPrimary">{item.name}</h3>
-                  <p className="text-textSecondary">Ksh {item.price.toFixed(2)}</p>
+          {cartItems.map((item) => {
+            const variantDescription = item.variant 
+                ? Object.values(item.variant.options).join(', ')
+                : '';
+            const cartItemId = item.variant ? item.variant.id : item.id;
+
+            return (
+              <li key={cartItemId} className="p-4 flex flex-col sm:flex-row items-center justify-between">
+                <div className="flex items-center w-full sm:w-auto mb-4 sm:mb-0">
+                  <img src={item.imageUrl} alt={item.name} className="h-20 w-20 rounded-md object-cover mr-4" />
+                  <div>
+                    <h3 className="text-lg font-medium text-textPrimary">{item.name}</h3>
+                    {variantDescription && (
+                        <p className="text-sm text-textSecondary">{variantDescription}</p>
+                    )}
+                    <p className="text-textSecondary">Ksh {item.price.toFixed(2)}</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-4">
-                <div className="flex items-center border border-gray-300 rounded-md">
-                  <button onClick={() => onUpdateQuantity(item.id, item.quantity - 1)} className="px-3 py-1 text-lg font-semibold text-gray-600 hover:bg-gray-100 rounded-l-md">-</button>
-                  <span className="px-4 py-1 text-center w-12">{item.quantity}</span>
-                  <button onClick={() => onUpdateQuantity(item.id, item.quantity + 1)} className="px-3 py-1 text-lg font-semibold text-gray-600 hover:bg-gray-100 rounded-r-md">+</button>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center border border-gray-300 rounded-md">
+                    <button onClick={() => onUpdateQuantity(item.id, item.quantity - 1, item.variant?.id)} className="px-3 py-1 text-lg font-semibold text-gray-600 hover:bg-gray-100 rounded-l-md">-</button>
+                    <span className="px-4 py-1 text-center w-12">{item.quantity}</span>
+                    <button onClick={() => onUpdateQuantity(item.id, item.quantity + 1, item.variant?.id)} className="px-3 py-1 text-lg font-semibold text-gray-600 hover:bg-gray-100 rounded-r-md">+</button>
+                  </div>
+                  <button onClick={() => onRemoveItem(item.id, item.variant?.id)} className="text-red-500 hover:text-red-700">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
-                <button onClick={() => onRemoveItem(item.id)} className="text-red-500 hover:text-red-700">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                  </svg>
-                </button>
-              </div>
-            </li>
-          ))}
+              </li>
+            )
+          })}
         </ul>
         <div className="p-4 bg-gray-50 rounded-b-lg flex flex-col sm:flex-row items-center justify-between">
           <div className="text-xl font-bold text-textPrimary mb-4 sm:mb-0">

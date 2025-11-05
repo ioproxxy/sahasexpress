@@ -1,4 +1,3 @@
-
 import { Product } from './types';
 
 export const MOCK_PRODUCTS: Product[] = [
@@ -9,16 +8,35 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 249.99,
     stock: 15,
     imageUrl: 'https://picsum.photos/seed/headphones/400/400',
-    description: 'Immerse yourself in pure sound with our AI-powered noise-cancelling headphones. All-day comfort and crystal-clear calls.'
+    description: 'Immerse yourself in pure sound with our AI-powered noise-cancelling headphones. All-day comfort and crystal-clear calls.',
+    reviews: [
+      { author: 'Alex', rating: 5, comment: 'Absolutely amazing sound quality! The noise cancelling is top-notch.' },
+      { author: 'Maria', rating: 4, comment: 'Very comfortable and great for long flights, but the app could be better.' },
+    ]
   },
   {
     id: 2,
     name: 'Urban Explorer Jacket',
     category: 'Fashion',
     price: 129.50,
-    stock: 30,
-    imageUrl: 'httpsum.photos/seed/jacket/400/400',
-    description: 'A stylish and waterproof jacket designed for the modern adventurer. Breathable fabric with multiple utility pockets.'
+    stock: 30, // Total stock is now sum of variants
+    imageUrl: 'https://picsum.photos/seed/jacket/400/400',
+    description: 'A stylish and waterproof jacket designed for the modern adventurer. Breathable fabric with multiple utility pockets.',
+    reviews: [
+        { author: 'Sam', rating: 5, comment: 'Perfect fit and truly waterproof. Looks great too!' }
+    ],
+    variantOptions: [
+      { name: 'Size', values: ['M', 'L', 'XL'] },
+      { name: 'Color', values: ['Black', 'Navy'] }
+    ],
+    variants: [
+      { id: '2-size-M_color-Black', options: { Size: 'M', Color: 'Black' }, stock: 10 },
+      { id: '2-size-M_color-Navy', options: { Size: 'M', Color: 'Navy' }, stock: 5 },
+      { id: '2-size-L_color-Black', options: { Size: 'L', Color: 'Black' }, stock: 8 },
+      { id: '2-size-L_color-Navy', options: { Size: 'L', Color: 'Navy' }, stock: 7 },
+      { id: '2-size-XL_color-Black', options: { Size: 'XL', Color: 'Black' }, stock: 0 },
+      { id: '2-size-XL_color-Navy', options: { Size: 'XL', Color: 'Navy' }, stock: 0 }
+    ]
   },
   {
     id: 3,
@@ -27,7 +45,8 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 499.00,
     stock: 8,
     imageUrl: 'https://picsum.photos/seed/projector/400/400',
-    description: 'Transform any space into a cinema with this compact 4K projector. Features auto-focus and built-in streaming apps.'
+    description: 'Transform any space into a cinema with this compact 4K projector. Features auto-focus and built-in streaming apps.',
+    reviews: []
   },
   {
     id: 4,
@@ -36,7 +55,11 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 199.99,
     stock: 22,
     imageUrl: 'https://picsum.photos/seed/watch/400/400',
-    description: 'A sleek and sophisticated timepiece with a genuine leather strap and sapphire crystal glass. Water-resistant up to 50m.'
+    description: 'A sleek and sophisticated timepiece with a genuine leather strap and sapphire crystal glass. Water-resistant up to 50m.',
+    reviews: [
+        { author: 'Chloe', rating: 5, comment: 'Elegant and timeless. I get compliments on it all the time.' },
+        { author: 'Ben', rating: 4, comment: 'Love the design. The strap took a few days to break in.' }
+    ]
   },
     {
     id: 5,
@@ -45,7 +68,10 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 159.00,
     stock: 12,
     imageUrl: 'https://picsum.photos/seed/keyboard/400/400',
-    description: 'Experience superior typing with our customizable mechanical keyboard. Features hot-swappable switches and RGB backlighting.'
+    description: 'Experience superior typing with our customizable mechanical keyboard. Features hot-swappable switches and RGB backlighting.',
+    reviews: [
+        { author: 'DevUser', rating: 5, comment: 'The best keyboard I have ever owned. Typing is a dream.' }
+    ]
   },
   {
     id: 6,
@@ -54,7 +80,8 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 59.99,
     stock: 50,
     imageUrl: 'https://picsum.photos/seed/charger/400/400',
-    description: 'Power up your phone, watch, and earbuds simultaneously with this elegant 3-in-1 wireless charging station.'
+    description: 'Power up your phone, watch, and earbuds simultaneously with this elegant 3-in-1 wireless charging station.',
+    reviews: []
   },
   {
     id: 7,
@@ -63,7 +90,11 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 89.99,
     stock: 40,
     imageUrl: 'https://picsum.photos/seed/backpack/400/400',
-    description: 'Durable and spacious, this backpack is perfect for work or travel. Includes a padded laptop sleeve and anti-theft pocket.'
+    description: 'Durable and spacious, this backpack is perfect for work or travel. Includes a padded laptop sleeve and anti-theft pocket.',
+    reviews: [
+        { author: 'TravelerTom', rating: 5, comment: 'Holds everything I need for a weekend trip. Very sturdy.' },
+        { author: 'StudentLife', rating: 4, comment: 'Great backpack, lots of pockets. Wish it had a water bottle holder on the side.' }
+    ]
   },
   {
     id: 8,
@@ -72,7 +103,8 @@ export const MOCK_PRODUCTS: Product[] = [
     price: 34.95,
     stock: 100,
     imageUrl: 'https://picsum.photos/seed/powerstrip/400/400',
-    description: 'Control your devices from anywhere with this smart power strip. Compatible with Alexa and Google Assistant.'
+    description: 'Control your devices from anywhere with this smart power strip. Compatible with Alexa and Google Assistant.',
+    reviews: []
   }
 ];
 
